@@ -43,7 +43,7 @@ func main() {
 		fmt.Println("3.) delete a menu item")
 		fmt.Println("4.) Add ingredients for an item ")
 		fmt.Println("5.) List ingredients for an item ")
-		fmt.Println("6.) Delete ingredients for an item")
+		fmt.Println("6.) Delete ingredient for an item")
 		fmt.Println("7.) List Menu Items")
 		fmt.Println("11.) Exit")
 		fmt.Println()
@@ -83,6 +83,18 @@ func main() {
 			fmt.Printf("Press Enter.......")
 			fmt.Scanln()
 			clear()
+		} else if input == 2 {
+			clear()
+			UpdateIngredients()
+			fmt.Printf("Press Enter.......")
+			fmt.Scanln()
+			clear()
+		} else if input == 3 {
+			clear()
+			DeleteMenuItem()
+			fmt.Printf("Press Enter.......")
+			fmt.Scanln()
+			clear()
 		}
 	}
 	clear()
@@ -108,6 +120,103 @@ func ListIngredients() {
 		}
 		fmt.Println()
 	}
+}
+
+func DeleteMenuItem() {
+	fmt.Println()
+	fmt.Println("Delete A Menu Item.....")
+	fmt.Println("---------------------------")
+	fmt.Println()
+	fmt.Print("Enter the menu item you want to delete: ")
+	item, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		item = strings.Replace(item, "\n", "", -1)
+		if _, ok := menuitem[item]; ok {
+			delete(menuitem, item)
+			fmt.Printf("%s has been deleted: ", item)
+		} else {
+			fmt.Println("Menu Item does not exist")
+		}
+	}
+}
+
+func DeleteIngredient() {
+	fmt.Println()
+	fmt.Println("Delete A Menu Item Ingredient.....")
+	fmt.Println("---------------------------")
+	fmt.Println()
+	fmt.Printf("Enter a menu item: ")
+	item, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println(err.Error())
+	} else {
+		item = strings.Replace(item, "\n", "", -1)
+		if _, ok := itemRecipe[item]; ok {
+			fmt.Printf("Enter the ingredient you want to delete: ")
+			ingredientTodelete, error := reader.ReadString('\n')
+			if error != nil {
+				fmt.Println(err.Error())
+			}
+			for index, ingredient := range itemRecipe[item] {
+				if ingredientTodelete == ingredient {
+
+				}
+			}
+		} else {
+			fmt.Printf("%s does not have a recipe or does not exist \n", item)
+		}
+	}
+
+}
+
+func UpdateIngredients() {
+	fmt.Println()
+	fmt.Println("Updating Menu Item Ingredient.....")
+	fmt.Println("---------------------------")
+	fmt.Println()
+	fmt.Print("Enter the Menu Item: ")
+	item, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	item = strings.Replace(item, "\n", "", -1)
+	changed := false
+	//Find if the menu item exists
+	if _, ok := itemRecipe[item]; ok {
+		fmt.Print("Enter the ingredient you wish to change: ")
+		oldIngredient, err := reader.ReadString('\n')
+		if err != nil {
+			fmt.Println(err.Error())
+		} else {
+
+			oldIngredient = strings.Replace(oldIngredient, "\n", "", -1)
+			//Finding the ingredients
+			for index, ingredient := range itemRecipe[item] {
+				if ingredient == oldIngredient {
+					fmt.Print("Enter new ingredient: ")
+					newIngredient, error := reader.ReadString('\n')
+					if error != nil {
+						fmt.Println(error.Error())
+					}
+					//Changing the ingredient
+					fmt.Println("Changed From", itemRecipe[item][index])
+					itemRecipe[item][index] = newIngredient
+					fmt.Println("TO ..", itemRecipe[item][index])
+					changed = true
+					break
+				}
+			}
+			if !changed {
+				fmt.Printf("%s does not have ingredient %s \n", item, oldIngredient)
+			}
+		}
+
+	} else {
+		fmt.Println("This menu item does not have a recipe or does not exist")
+	}
+
 }
 
 func clear() {
