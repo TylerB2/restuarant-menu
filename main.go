@@ -95,6 +95,11 @@ func main() {
 			fmt.Printf("Press Enter.......")
 			fmt.Scanln()
 			clear()
+		} else if input == 6 {
+			clear()
+			DeleteIngredient()
+			fmt.Scanln()
+			clear()
 		}
 	}
 	clear()
@@ -133,9 +138,16 @@ func DeleteMenuItem() {
 		fmt.Println(err.Error())
 	} else {
 		item = strings.Replace(item, "\n", "", -1)
+		//check if menu item exists
 		if _, ok := menuitem[item]; ok {
 			delete(menuitem, item)
-			fmt.Printf("%s has been deleted: ", item)
+			fmt.Printf("%s has been deleted: \n", item)
+			//check if item had a recipe
+			if _, ok := itemRecipe[item]; ok {
+				delete(itemRecipe, item)
+				fmt.Printf("Recipe for %s has been deleted: \n", item)
+			}
+
 		} else {
 			fmt.Println("Menu Item does not exist")
 		}
@@ -153,15 +165,18 @@ func DeleteIngredient() {
 		fmt.Println(err.Error())
 	} else {
 		item = strings.Replace(item, "\n", "", -1)
+		//checking if the item exists
 		if _, ok := itemRecipe[item]; ok {
 			fmt.Printf("Enter the ingredient you want to delete: ")
 			ingredientTodelete, error := reader.ReadString('\n')
 			if error != nil {
 				fmt.Println(err.Error())
 			}
+			ingredientTodelete = strings.Replace(ingredientTodelete, "\n", "", -1)
 			for index, ingredient := range itemRecipe[item] {
+				//Deleting from a slice
 				if ingredientTodelete == ingredient {
-
+					itemRecipe[item] = append(itemRecipe[item][:index], itemRecipe[item][index+1:]...)
 				}
 			}
 		} else {
@@ -279,19 +294,22 @@ func AddIngredient() {
 	Item = strings.Replace(Item, "\n", "", -1)
 
 	var noOfIngredients int
+	//Check if the item exists
 	if _, ok := menuitem[Item]; ok {
 		fmt.Print("How many Ingredients do you want to enter: ")
 		_, err := fmt.Scanln(&noOfIngredients)
 		if err != nil {
 			fmt.Println(err.Error())
 		} else {
+			//loop through ingredients and add them to map
 			for i := 0; i < noOfIngredients; i++ {
-				fmt.Printf("Enter Ingredient %d: ", i)
+				fmt.Printf("Enter Ingredient %d: ", i+1)
 				ingredient, error := reader.ReadString('\n')
 				if error != nil {
 					fmt.Println(error.Error())
 					break
 				}
+				//add ingredients to map
 				ingredient = strings.Replace(ingredient, "\n", "", -1)
 				itemRecipe[Item] = append(itemRecipe[Item], ingredient)
 			}
