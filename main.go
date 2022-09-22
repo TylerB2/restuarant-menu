@@ -45,6 +45,7 @@ func main() {
 		fmt.Println("5.) List ingredients for an item ")
 		fmt.Println("6.) Delete ingredient for an item")
 		fmt.Println("7.) List Menu Items")
+		fmt.Println("8.) Update Ingredients")
 		fmt.Println("11.) Exit")
 		fmt.Println()
 		fmt.Print("Enter a selection: ")
@@ -83,7 +84,7 @@ func main() {
 			fmt.Printf("Press Enter.......")
 			fmt.Scanln()
 			clear()
-		} else if input == 2 {
+		} else if input == 8 {
 			clear()
 			UpdateIngredients()
 			fmt.Printf("Press Enter.......")
@@ -98,6 +99,11 @@ func main() {
 		} else if input == 6 {
 			clear()
 			DeleteIngredient()
+			fmt.Scanln()
+			clear()
+		} else if input == 2 {
+			clear()
+			UpdateMenuItem()
 			fmt.Scanln()
 			clear()
 		}
@@ -151,6 +157,52 @@ func DeleteMenuItem() {
 		} else {
 			fmt.Println("Menu Item does not exist")
 		}
+	}
+}
+
+func UpdateMenuItem() {
+	fmt.Println()
+	fmt.Println("Updating A Menu Item.....")
+	fmt.Println("---------------------------")
+	fmt.Println()
+	fmt.Print("Enter the menu item you wish to change: ")
+	menuItemTochange, err := reader.ReadString('\n')
+	if err != nil {
+		fmt.Println("Error: ", err.Error())
+		fmt.Scanln()
+	}
+	menuItemTochange = strings.Replace(menuItemTochange, "\n", "", -1)
+	//check if menu item exists
+	if _, ok := menuitem[menuItemTochange]; ok {
+		fmt.Print("Enter the name you wish to change to: ")
+		changedMenuItem, error := reader.ReadString('\n')
+		if error != nil {
+			fmt.Println("ERROR ", error.Error())
+		} else {
+			//Copy menu item values and delete old menu item
+			v := menuitem[menuItemTochange]
+			delete(menuitem, menuItemTochange)
+
+			//add the changed menu item to map
+			menuitem[changedMenuItem] = v
+			fmt.Println("Menu item changed..")
+
+			//Check if that menu item has a recipe
+			if _, ok := itemRecipe[menuItemTochange]; ok {
+				//Copy recipe values and delet old recipe menu item
+				r := itemRecipe[menuItemTochange]
+				delete(itemRecipe, menuItemTochange)
+
+				//add changed menu item to recipe
+				itemRecipe[changedMenuItem] = r
+				fmt.Println("Recipe changes..")
+			}
+
+		}
+
+	} else {
+		fmt.Println("Menu item does not exist")
+		fmt.Scanln()
 	}
 }
 
