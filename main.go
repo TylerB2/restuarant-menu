@@ -5,21 +5,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
 var (
-	menuitem = map[string]float32{"Cheesy Broccoli Soup in a Bread Bowl": 50.00, "Bacon Cheddar Potato Skins": 60.00,
-		"Sour Cream-Lemon Pie": 45.00}
-
-	itemRecipe = map[string][]string{"Cheesy Broccoli Soup in a Bread Bowl": {"1/4 cup butter, cubed",
-		"1/2 cup chopped onion", "2 garlic cloves, minced", "4 cups fresh broccoli florets (about 8 ounces)", "1 large carrot, finely chopped",
-		"3 cups chicken stock", "2 cups half-and-half cream", "2 bay leaves", "1/2 teaspoon salt", "1/4 teaspoon ground nutmeg",
-		"1/4 teaspoon pepper", "1/4 cup cornstarch", "1/4 cup water or additional chicken stock", "2-1/2 cups shredded cheddar cheese",
-		"6 small round bread loaves (about 8 ounces each), optional", "Optional toppings: Crumbled cooked bacon, additional shredded cheddar cheese, ground nutmeg and pepper"},
-		"Bacon Cheddar Potato Skins": {"4 large baking potatoes, baked", "3 tablespoons canola oil", "1 tablespoon grated Parmesan cheese", "1/2 teaspoon salt", "1/4 teaspoon garlic powder",
-			"1/4 teaspoon paprika", "1/8 teaspoon peppe", "8 bacon strips, cooked and crumbled", "1-1/2 cups shredded cheddar cheese",
-			"1/2 cup sour cream", "4 green onions, sliced"}}
+	menuitem   = make(map[string]float64)
+	itemRecipe = make(map[string][]string)
 
 	reader = bufio.NewReader(os.Stdout)
 )
@@ -46,6 +38,7 @@ func main() {
 		fmt.Println("6.) Delete ingredient for an item")
 		fmt.Println("7.) List Menu Items")
 		fmt.Println("8.) Update Ingredients")
+		fmt.Println("9.) Save Session")
 		fmt.Println("11.) Exit")
 		fmt.Println()
 		fmt.Print("Enter a selection: ")
@@ -106,6 +99,12 @@ func main() {
 			UpdateMenuItem()
 			fmt.Scanln()
 			clear()
+		} else if input == 9 {
+			clear()
+			WriteToFile()
+			WriteRecipeToFile()
+			fmt.Scanln()
+			clear()
 		}
 	}
 	clear()
@@ -113,8 +112,93 @@ func main() {
 }
 
 func init() {
-	//Loads Data from a File
+	LoadMenuItems()
+	LoadRecipe()
+	fmt.Scanln()
+}
 
+func LoadMenuItems() {
+	//load text file if it exist
+	file, err := os.Open("./files/Menuitem.txt")
+	if err != nil {
+		fmt.Println(err.Error())
+		fmt.Scanln()
+	}
+	defer file.Close()
+	s := bufio.NewScanner(file)
+	//Scan file line by line into a map
+	for s.Scan() {
+		line := strings.Split(s.Text(), ",")
+		price, errr := strconv.ParseFloat(line[1], 64)
+		if errr != nil {
+			fmt.Println(errr.Error())
+		} else {
+			menuitem[line[0]] = price
+		}
+
+	}
+	fmt.Println("Menu Items Loaded")
+}
+
+func LoadRecipe() {
+	//open file if not creates
+	file, err := os.Open("./files/Recipe.txt")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	defer file.Close()
+
+	s := bufio.NewScanner(file)
+	for s.Scan() {
+		line := strings.Split(s.Text(), ",")
+		for i := 1; i < len(line); i++ {
+			itemRecipe[line[0]] = append(itemRecipe[line[0]], line[i])
+		}
+	}
+	fmt.Println("Recipes for items have been loaded")
+}
+
+func WriteRecipeToFile() {
+	//create a new file
+	file, err := os.Create("./files/Recipe.txt")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	//loop through recipes
+	for item, ingredients := range itemRecipe {
+		s := item + ","
+		for i := 0; i < len(ingredients); i++ {
+			s += ingredients[i] + ","
+		}
+		s = strings.TrimSuffix(s, ",")
+		//write the items to a file
+		_, err := fmt.Fprintln(file, s)
+		if err != nil {
+			fmt.Println(err.Error())
+			file.Close()
+		}
+	}
+	file.Close()
+}
+
+func WriteToFile() {
+	//Create the file
+	file, err := os.Create("./files/Menuitem.txt")
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	//write menu items to a file
+	for item, price := range menuitem {
+		s := item + "," + strconv.FormatFloat(float64(price), 'f', -1, 64)
+		_, errr := fmt.Fprintln(file, s)
+		if errr != nil {
+			fmt.Println(errr.Error())
+			file.Close()
+		}
+
+	}
+	fmt.Print("written to file")
+	file.Close()
 }
 
 func ListIngredients() {
@@ -320,7 +404,7 @@ func AddMenuItem() {
 		fmt.Println(err.Error())
 	}
 	itemName = strings.Replace(itemName, "\n", "", -1)
-	var itemPrice float32
+	var itemPrice float64
 	fmt.Print("Enter item Price: ")
 	_, err2 := fmt.Scan(&itemPrice)
 	if err2 != nil {
